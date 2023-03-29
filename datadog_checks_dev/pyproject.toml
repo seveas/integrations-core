@@ -84,7 +84,11 @@ cli = [
     "toml>=0.9.4, <1.0.0",
     "tomli>=1.1.0",
     "tomli-w>=1.0.0",
+<<<<<<< HEAD
     "tox>=3.12.1, <4.0.0", 
+=======
+    "tox>=3.12.1",
+>>>>>>> a03c67c132 (revert a change to the incorrect file)
     "twine>=1.11.0",
     "virtualenv",
     # TODO: Remove once every check has a pyproject.toml
@@ -123,4 +127,8 @@ include = [
 ]
 dev-mode-dirs = [
     ".",
+<<<<<<< HEAD
 ]
+=======
+]
+>>>>>>> a03c67c132 (revert a change to the incorrect file)
