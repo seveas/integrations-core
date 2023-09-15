@@ -6,6 +6,7 @@
 
 * Cache performance counter type to prevent querying for the same counter multiple times (especially for the per-db counters) ([#15714](https://github.com/DataDog/integrations-core/pull/15714))
 * Add the `db` tag to every metric also using `database` or `database_name` for consistency ([#15792](https://github.com/DataDog/integrations-core/pull/15792))
+* Updates metric documentation in `metadata.csv` to add performance counter information when applicable, and provide a more complete description of available tags per metric. ([15840](https://github.com/DataDog/integrations-core/pull/15840))
 
 ***Added***:
 
