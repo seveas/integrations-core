@@ -21,7 +21,7 @@ from datadog_checks.sqlserver.const import (
     INSTANCE_METRICS_DATABASE,
     TASK_SCHEDULER_METRICS,
 )
-from datadog_checks.sqlserver.queries import get_query_file_stats
+from datadog_checks.sqlserver.queries import get_index_usage_stats, get_query_file_stats
 
 
 def get_local_driver():
@@ -63,7 +63,13 @@ def get_expected_file_stats_metrics():
     return ["sqlserver." + c["name"] for c in query_file_stats["columns"] if c["type"] != "tag"]
 
 
+def get_expected_index_usage_metrics():
+    index_usage_stats = get_index_usage_stats()
+    return ["sqlserver." + c["name"] for c in index_usage_stats["columns"] if c["type"] != "tag"]
+
+
 EXPECTED_FILE_STATS_METRICS = get_expected_file_stats_metrics()
+EXPECTED_INDEX_USAGE_METRICS = get_expected_index_usage_metrics()
 
 EXPECTED_DEFAULT_METRICS = (
     [
@@ -77,6 +83,7 @@ EXPECTED_DEFAULT_METRICS = (
     ]
     + SERVER_METRICS
     + EXPECTED_FILE_STATS_METRICS
+    + EXPECTED_INDEX_USAGE_METRICS
 )
 EXPECTED_METRICS = (
     EXPECTED_DEFAULT_METRICS
