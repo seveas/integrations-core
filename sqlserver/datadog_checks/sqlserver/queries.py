@@ -260,3 +260,12 @@ def get_query_file_stats(sqlserver_major_version, sqlserver_engine_edition):
         ]
         + metric_columns,
     }
+
+
+def get_index_usage_stats():
+    """
+    Construct the sys.dm_db_index_usage_stats QueryExecutor configuration
+
+    :return: a QueryExecutor query config object
+    """
+    pass
