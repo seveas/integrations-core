@@ -134,6 +134,7 @@ class Terminal:
         self.console = Console(
             force_terminal=enable_color,
             no_color=enable_color is False,
+            highlight=False,
             # Force consistent output for test assertions
             legacy_windows=False if 'DDEV_SELF_TESTING' in os.environ else None,
         )
@@ -149,6 +150,24 @@ class Terminal:
 
         # Chosen as the default since it's compatible everywhere and looks nice
         self._style_spinner = 'simpleDotsScrolling'
+
+    def style_success(self, text: str) -> Text:
+        return Text(text, style=self._style_level_success)
+
+    def style_error(self, text: str) -> Text:
+        return Text(text, style=self._style_level_error)
+
+    def style_warning(self, text: str) -> Text:
+        return Text(text, style=self._style_level_warning)
+
+    def style_waiting(self, text: str) -> Text:
+        return Text(text, style=self._style_level_waiting)
+
+    def style_info(self, text: str) -> Text:
+        return Text(text, style=self._style_level_info)
+
+    def style_debug(self, text: str) -> Text:
+        return Text(text, style=self._style_level_debug)
 
     def initialize_styles(self, styles: dict):  # no cov
         # Lazily display errors so that they use the correct style
@@ -187,37 +206,37 @@ class Terminal:
         if self.verbosity < VerbosityLevels.ERROR:
             return
 
-        self.output(text, self._style_level_error, stderr=stderr, indent=indent, link=link, **kwargs)
+        self._output(text, self._style_level_error, stderr=stderr, indent=indent, link=link, **kwargs)
 
     def display_warning(self, text='', stderr=True, indent=None, link=None, **kwargs):
         if self.verbosity < VerbosityLevels.WARNING:
             return
 
-        self.output(text, self._style_level_warning, stderr=stderr, indent=indent, link=link, **kwargs)
+        self._output(text, self._style_level_warning, stderr=stderr, indent=indent, link=link, **kwargs)
 
     def display_info(self, text='', stderr=True, indent=None, link=None, **kwargs):
         if self.verbosity < VerbosityLevels.INFO:
             return
 
-        self.output(text, self._style_level_info, stderr=stderr, indent=indent, link=link, **kwargs)
+        self._output(text, self._style_level_info, stderr=stderr, indent=indent, link=link, **kwargs)
 
     def display_success(self, text='', stderr=True, indent=None, link=None, **kwargs):
         if self.verbosity < VerbosityLevels.INFO:
             return
 
-        self.output(text, self._style_level_success, stderr=stderr, indent=indent, link=link, **kwargs)
+        self._output(text, self._style_level_success, stderr=stderr, indent=indent, link=link, **kwargs)
 
     def display_waiting(self, text='', stderr=True, indent=None, link=None, **kwargs):
         if self.verbosity < VerbosityLevels.INFO:
             return
 
-        self.output(text, self._style_level_waiting, stderr=stderr, indent=indent, link=link, **kwargs)
+        self._output(text, self._style_level_waiting, stderr=stderr, indent=indent, link=link, **kwargs)
 
     def display_debug(self, text='', stderr=True, indent=None, link=None, **kwargs):
         if self.verbosity < VerbosityLevels.DEBUG:
             return
 
-        self.output(f'DEBUG: {text}', None, stderr=stderr, indent=indent, link=link, **kwargs)
+        self._output(f'DEBUG: {text}', None, stderr=stderr, indent=indent, link=link, **kwargs)
 
     def display_header(self, title=''):
         self.console.rule(Text(title, self._style_level_success))
@@ -225,7 +244,7 @@ class Terminal:
     def display_markdown(self, text, stderr=False, **kwargs):
         from rich.markdown import Markdown
 
-        self.display_raw(Markdown(text), stderr=stderr, **kwargs)
+        self.output(Markdown(text), stderr=stderr, **kwargs)
 
     def create_validation_tracker(self, label: str):
         from rich.tree import Tree
@@ -253,29 +272,28 @@ class Terminal:
             finalizer=lambda: setattr(self.platform, 'displaying_status', False),
         )
 
-    def output(self, text='', style=None, *, stderr=False, indent=None, link=None, **kwargs):
-        kwargs.setdefault('overflow', 'ignore')
-        kwargs.setdefault('no_wrap', True)
-        kwargs.setdefault('crop', False)
-
+    def _output(self, text='', style=None, *, stderr=False, indent=None, link=None, **kwargs):
         if indent:
             text = indent_text(text, indent)
 
         if link:
             style = style.update_link(self.platform.format_file_uri(link))
 
+        self.output(text, stderr=stderr, style=style, **kwargs)
+
+    def output(self, *args, stderr=False, **kwargs):
+        kwargs.setdefault('overflow', 'ignore')
+        kwargs.setdefault('no_wrap', True)
+        kwargs.setdefault('crop', False)
+
         if not stderr:
-            self.console.print(text, style=style, **kwargs)
+            self.console.print(*args, **kwargs)
         else:
             self.console.stderr = True
             try:
-                self.console.print(text, style=style, **kwargs)
+                self.console.print(*args, **kwargs)
             finally:
                 self.console.stderr = False
-
-    def display_raw(self, text, **kwargs):
-        # No styling
-        self.console.print(text, overflow='ignore', no_wrap=True, crop=False, **kwargs)
 
     @staticmethod
     def prompt(text, **kwargs):

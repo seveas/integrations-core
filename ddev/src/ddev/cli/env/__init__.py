@@ -8,9 +8,10 @@ from datadog_checks.dev.tooling.commands.env.ls import ls
 from datadog_checks.dev.tooling.commands.env.prune import prune
 from datadog_checks.dev.tooling.commands.env.reload import reload_env
 from datadog_checks.dev.tooling.commands.env.shell import shell
-from datadog_checks.dev.tooling.commands.env.start import start
-from datadog_checks.dev.tooling.commands.env.stop import stop
 from datadog_checks.dev.tooling.commands.env.test import test
+
+from ddev.cli.env.start import start
+from ddev.cli.env.stop import stop
 
 
 @click.group(short_help='Manage environments')

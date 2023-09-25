@@ -12,6 +12,8 @@ class AppEnvVars:
 
 
 class ConfigEnvVars:
+    DATA = 'HATCH_DATA_DIR'
+    CACHE = 'HATCH_CACHE_DIR'
     CONFIG = 'DDEV_CONFIG'
 
 
