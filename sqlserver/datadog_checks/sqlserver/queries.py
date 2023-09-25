@@ -268,4 +268,40 @@ def get_index_usage_stats():
 
     :return: a QueryExecutor query config object
     """
-    pass
+    column_definitions = {
+        'user_seeks': {'name': 'index.user_seeks', 'type': 'monotonic_count'},
+        'user_scans': {'name': 'index.user_scans', 'type': 'monotonic_count'},
+        'user_lookups': {'name': 'index.user_lookups', 'type': 'monotonic_count'},
+        'user_updates': {'name': 'index.user_updates', 'type': 'monotonic_count'},
+    }
+
+    # sort columns to ensure a static column order
+    sql_columns = []
+    metric_columns = []
+    for column in sorted(column_definitions.keys()):
+        sql_columns.append("ixus.{}".format(column))
+        metric_columns.append(column_definitions[column])
+
+    query = """\
+    SELECT
+         DB_NAME(ixus.database_id),
+         ind.name,
+         OBJECT_NAME(ind.object_id),
+        {sql_columns}
+    FROM sys.indexes ind
+             INNER JOIN sys.dm_db_index_usage_stats ixus
+             ON ixus.index_id = ind.index_id AND ixus.object_id = ind.object_id
+    WHERE OBJECTPROPERTY(ind.object_id, 'IsUserTable') = 1
+    GROUP BY ixus.database_id, OBJECT_NAME(ind.object_id), ind.name, {sql_columns}
+    """
+
+    return {
+        'name': 'sys.dm_db_index_usage_stats',
+        'query': query.strip().format(sql_columns=", ".join(sql_columns)),
+        'columns': [
+            {'name': 'db', 'type': 'tag'},
+            {'name': 'index', 'type': 'tag'},
+            {'name': 'table', 'type': 'tag'},
+        ]
+        + metric_columns,
+    }
